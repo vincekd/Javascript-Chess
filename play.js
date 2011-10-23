@@ -1,11 +1,11 @@
 "use strict";
 var pieceScores = {
-    "p" : 1,
-    "b" : 2,
-    "n" : 3,
-    "r" : 4,
-    "q" : 5,
-    "k" : 10
+    "p" : 2,
+    "b" : 4,
+    "n" : 5,
+    "r" : 7,
+    "q" : 12,
+    "k" : 100
 }
 // var startBoard = [ 
 //     [ "r", "n", "b", "q", "k", "b", "n", "r" ],
@@ -18,10 +18,10 @@ var pieceScores = {
 //     [ "r", "n", "b", "q", "k", "b", "n", "r" ]
 // ];
 var startBoard = [ 
-    [ "r", "p", "", "", "", "", "p", "r" ],
+    [ "r", "p", "", "", "", "", "p", "" ],
     [ "n", "p", "", "", "", "", "p", "n" ],
     [ "b", "p", "", "", "", "", "p", "b" ],
-    [ "q", "p", "", "", "", "", "p", "k" ],
+    [ "q", "", "", "p", "p", "", "r", "k" ],
     [ "k", "p", "", "", "", "", "p", "q" ],
     [ "b", "p", "", "", "", "", "p", "b" ],
     [ "n", "p", "", "", "", "", "p", "n" ],
@@ -29,6 +29,8 @@ var startBoard = [
 ];
 
 var turn = 7;
+var levels = 2;
 var initBoard = board( startBoard );
-var board = new Board( initBoard, turn );
-board.getValidMoves();
+var board = new Board( initBoard, turn, 0 );
+board.init();
+

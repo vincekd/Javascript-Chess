@@ -39,9 +39,12 @@ function board( arr ){
     return array;
 }
 
-function Board( board, player ){
+function Board( board, player, level ){
     this.board = board;
     this.turn = player;
+    this.moves = [];
+    this.children = [];
+    this.level = level;
     this.getValidMoves = function(){
 	var bd = this.board;
 	var moves = [];
@@ -86,8 +89,106 @@ function Board( board, player ){
 		}
 	    }
 	}
-	console.log( moves );
+	this.moves = moves;
     }
+
+    this.permuteBoards = function(){
+	//TODO remove captured pieces
+	for( var i = 0; i < this.moves.length; i ++ ){
+	    for( var m = 0; m < this.moves[i].moves.length; m ++ ){
+		//console.log( this.moves[i].moves );
+		var newBoard = blankBoard();
+		for( var k = 0; k < this.board.length; k ++ ){
+		    for( var j = 0; j < this.board[k].length; j ++ ){
+			if( this.moves[i].pos.x == k && this.moves[i].pos.y == j ){
+			    //TODO make this work
+			    newBoard[k][j] = false;
+			    newBoard[this.moves[i].moves[m].x][this.moves[i].moves[m].y] = 
+				deepCopy( this.board[k][j], this.moves[i].moves[m] );
+			} else if( this.moves[i].moves[m].x == k && this.moves[i].moves[m].y == j ){
+			    //already filled, or should be soon
+			} else {
+			    newBoard[k][j] = this.board[k][j];
+			}
+		    }
+		}
+		var turn = 0;
+		if( this.turn == 0 ){
+		    turn = 7;
+		}
+		var obj = new Board( newBoard, turn, this.level + 1 );
+		this.children.push( obj );
+	    }
+	}
+    }
+
+    this.score = function(){
+	//TODO score center control
+	//TODO figure in mate and checkmate
+	var score = 0;
+	var turn = this.turn;
+	if( turn == 0 ){
+	    turn = 7;
+	}
+	for( var i = 0; i < this.board.length; i ++ ){
+	    for( var j = 0; j < this.board[i].length; j ++ ){
+		if( board[i][j] !== false ){
+		    if( board[i][j].player == turn ){
+			score += pieceScores[board[i][j].rep];
+		    }
+		}
+	    }
+	}
+	return score;
+    }
+
+    this.scoreBoards = function(){
+	var highest = null;
+	var board;
+	var score;
+	for( var i = 0; i < this.children.length; i ++ ){
+	    score = this.children[i].score();
+	    if( highest === null || score > highest ){
+		highest = score;
+		board = this.children[i];
+	    }
+	}
+	return [board, score];
+    }	
+
+    this.init = function( ){
+	var best = 0;
+	this.getValidMoves();
+	this.permuteBoards();
+	if( this.level == levels ){
+	    return this.scoreBoards();
+	} else {
+	    for( var i = 0; i < this.children.length; i ++ ){
+		var tmp = this.children[i].init();
+		if( !! tmp ){
+		    if( tmp[1] > best ){
+			best = tmp;
+		    }
+		}
+	    }
+	}
+    }
+}
+
+function deepCopy( obj, pos ){
+    switch( obj.rep ){
+    case "r": return new Rook( pos, obj.player );
+    case "b": return new Bishop( pos, obj.player );
+    case "n": return new Knight( pos, obj.player );
+    case "k": return new King( pos, obj.player );
+    case "q": return new Queen( pos, obj.player );
+    case "p": return new Pawn( pos, obj.player );
+    }
+}
+
+function blankBoard(){
+    var hi = [[],[],[],[],[],[],[],[]]; 
+    return hi;
 }
 
 function King( pos, player ){
@@ -160,11 +261,27 @@ function Queen( pos, player ){
 	for( var i = 0; i < this.moves.length; i ++ ){
 	    if( move.x == pos.x ){
 		if( this.moves[i].x == move.x ){
-		    
+		    if( move.y < pos.y ){
+			if( this.moves[i].y < move.y ){
+			    arr.push( this.moves[i] );
+			}
+		    } else if( move.y > pos.y ){
+			if( this.moves[i].y > move.y ){
+			    arr.push( this.moves[i] );
+			}
+		    }
 		}
 	    } else if( move.y == pos.y ){
 		if( this.moves[i].y == move.y ){
-		    
+		    if( move.x < pos.x ){
+			if( this.moves[i].x < move.x ){
+			    arr.push( this.moves[i] );
+			}
+		    } else if( move.x > pos.x ){
+			if( this.moves[i].x > move.x ){
+			    arr.push( this.moves[i] );
+			}
+		    }
 		}
 	    } else if( move.x > pos.x && move.y > pos.y ){
 	 	if( this.moves[i].x > move.x && this.moves[i].y > move.y ){
@@ -216,22 +333,22 @@ function Rook( pos, player ){
     this.dependentMoves = function( move ){
 	var pos = this.pos;
 	var arr = [];
-	var w,x;
+	var w,z;
 	if( pos.y == move.y ){
 	    w = "y";
-	    x = "x";
+	    z = "x";
 	} else if( pos.x == move.x ){
 	    w = "x";
-	    x = "y";
+	    z = "y";
 	}
 	for( var i = 0; i < this.moves.length; i ++ ){
 	    if( this.moves[i] !== false ){
-		if( pos[x] < move[x] ){
-		    if( this.moves[i][x] > move[x] ){
+		if( pos[z] < move[z] ){
+		    if( this.moves[i][z] > move[z] ){
 			arr.push( this.moves[i] );
 		    }
-		} else if( pos[x] > move[x] ){
-		    if( this.moves[i][x] < move[x] ){
+		} else if( pos[z] > move[z] ){
+		    if( this.moves[i][z] < move[z] ){
 			arr.push( this.moves[i] );
 		    }
 		}
@@ -308,6 +425,7 @@ function Pawn( pos, player ){
 	var validMoves = [];
 	var x, y;
 	//TODO add en passante
+	//TODO add diagonal attack
 	if( this.player === 0 ){
 	    if( pos.y == 1 ){
 		moves.push( new Position( pos.x, pos.y + 2 ) );
@@ -327,6 +445,16 @@ function Pawn( pos, player ){
 	    }
 	}
 	this.moves = validMoves;
+    }
+    this.dependentMoves = function( move ){
+	var pos = this.pos;
+	var arr = [];
+	for( var i = 0; i < this.moves.length; i ++ ){
+	    if( this.moves[i].y > move.y ){
+		arr.push( this.moves[i] );
+	    }
+	}
+	return arr;
     }
 }
 
