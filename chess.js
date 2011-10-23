@@ -112,9 +112,9 @@ function Board( board, player, level ){
 			}
 		    }
 		}
-		var turn = 0;
-		if( this.turn == 0 ){
-		    turn = 7;
+		var turn = WHITE;
+		if( this.turn == WHITE ){
+		    turn = BLACK;
 		}
 		var obj = new Board( newBoard, turn, this.level + 1 );
 		this.children.push( obj );
@@ -125,21 +125,28 @@ function Board( board, player, level ){
     this.score = function(){
 	//TODO score center control
 	//TODO figure in mate and checkmate
-	var score = 0;
-	var turn = this.turn;
-	if( turn == 0 ){
-	    turn = 7;
-	}
+	//them most and you least
+	var score0 = 0
+	var score7 = 0;
+	// var turn = this.turn;
+	// if( turn == 0 ){
+	//     turn = 7;
+	// }
 	for( var i = 0; i < this.board.length; i ++ ){
 	    for( var j = 0; j < this.board[i].length; j ++ ){
 		if( board[i][j] !== false ){
-		    if( board[i][j].player == turn ){
-			score += pieceScores[board[i][j].rep];
+		    //if( board[i][j].player == turn ){
+		    if( board[i][j].player == WHITE ){
+			score0 += pieceScores[board[i][j].rep];
+		    } else if( board[i][j].player == BLACK ){
+			score7 += pieceScores[board[i][j].rep];
 		    }
+		    //}
 		}
 	    }
 	}
-	return score;
+	
+	return { "BLACK" : score7, "WHITE" : score0, "total" : (score0 - score7) };
     }
 
     this.scoreBoards = function(){
@@ -148,27 +155,33 @@ function Board( board, player, level ){
 	var score;
 	for( var i = 0; i < this.children.length; i ++ ){
 	    score = this.children[i].score();
-	    if( highest === null || score > highest ){
-		highest = score;
-		board = this.children[i];
+	    if( this.turn == WHITE ){
+		if( highest === null || score.total > highest ){
+		    highest = score.total;
+		    board = this.children[i];
+		}
+	    } else if( this.turn == BLACK ){
+		if( highest === null || score.total < highest ){
+		    highest = score.total;
+		    board = this.children[i];
+		}
 	    }
 	}
 	return [board, score];
     }	
 
     this.init = function( ){
-	var best = 0;
 	this.getValidMoves();
 	this.permuteBoards();
 	if( this.level == levels ){
 	    return this.scoreBoards();
 	} else {
+	    //figure out scoring.  High means 0, low means 7
+	    var best = null;
 	    for( var i = 0; i < this.children.length; i ++ ){
 		var tmp = this.children[i].init();
 		if( !! tmp ){
-		    if( tmp[1] > best ){
-			best = tmp;
-		    }
+		    console.log( tmp[1].total );
 		}
 	    }
 	}
@@ -187,8 +200,7 @@ function deepCopy( obj, pos ){
 }
 
 function blankBoard(){
-    var hi = [[],[],[],[],[],[],[],[]]; 
-    return hi;
+    return [[],[],[],[],[],[],[],[]];
 }
 
 function King( pos, player ){
@@ -426,12 +438,12 @@ function Pawn( pos, player ){
 	var x, y;
 	//TODO add en passante
 	//TODO add diagonal attack
-	if( this.player === 0 ){
+	if( this.player === WHITE ){
 	    if( pos.y == 1 ){
 		moves.push( new Position( pos.x, pos.y + 2 ) );
 	    }
 	    moves.push( new Position( pos.x, pos.y + 1 ) );
-	} else if( this.player == 7 ){
+	} else if( this.player == BLACK ){
 	    if( pos.y == 6 ){
 		moves.push( new Position( pos.x, pos.y - 2 ) );
 	    }

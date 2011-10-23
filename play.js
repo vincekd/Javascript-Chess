@@ -27,8 +27,9 @@ var startBoard = [
     [ "n", "p", "", "", "", "", "p", "n" ],
     [ "r", "p", "", "", "", "", "p", "r" ]
 ];
-
-var turn = 7;
+var WHITE = 0;
+var BLACK = 7;
+var turn = WHITE;
 var levels = 2;
 var initBoard = board( startBoard );
 var board = new Board( initBoard, turn, 0 );
