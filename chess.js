@@ -34,6 +34,11 @@ function board( arr ){
 		piece = false;
 	    }
 	    array[i][j] = piece;
+	    if( piece === false ){
+		$("#row_" + i + " .col_" + j).text( " " );   
+	    } else {
+		$("#row_" + i + " .col_" + j).text( piece.rep );
+	    }
 	}
     }
     return array;
@@ -125,23 +130,16 @@ function Board( board, player, level ){
     this.score = function(){
 	//TODO score center control
 	//TODO figure in mate and checkmate
-	//them most and you least
 	var score0 = 0
 	var score7 = 0;
-	// var turn = this.turn;
-	// if( turn == 0 ){
-	//     turn = 7;
-	// }
 	for( var i = 0; i < this.board.length; i ++ ){
 	    for( var j = 0; j < this.board[i].length; j ++ ){
 		if( board[i][j] !== false ){
-		    //if( board[i][j].player == turn ){
 		    if( board[i][j].player == WHITE ){
 			score0 += pieceScores[board[i][j].rep];
 		    } else if( board[i][j].player == BLACK ){
 			score7 += pieceScores[board[i][j].rep];
 		    }
-		    //}
 		}
 	    }
 	}
@@ -173,16 +171,30 @@ function Board( board, player, level ){
     this.init = function( ){
 	this.getValidMoves();
 	this.permuteBoards();
-	if( this.level == levels ){
+	var best = null;
+	var tmp;
+	if( this.level >= levels ){
 	    return this.scoreBoards();
 	} else {
 	    //figure out scoring.  High means 0, low means 7
-	    var best = null;
 	    for( var i = 0; i < this.children.length; i ++ ){
-		var tmp = this.children[i].init();
+		tmp = this.children[i].init();
 		if( !! tmp ){
-		    console.log( tmp[1].total );
+		    if( this.turn == WHITE ){
+			if( best === null || tmp[1].total < best ){
+			    best = tmp;
+			}
+		    } else if( this.turn == BLACK ){
+			if( best === null || tmp[1].total > best ){
+			    best = tmp;
+			}
+		    }
 		}
+	    }
+	    if( this.level > 0 ){
+		return [this, best[1]];
+	    } else {
+		return best;
 	    }
 	}
     }
