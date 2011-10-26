@@ -65,11 +65,23 @@ function Board( board, player, level ){
 		    for( var k = 0; k < cell.moves.length; k++ ){
 			if( cell.moves[k] !== false ) {
 			    if( bd[cell.moves[k].x][cell.moves[k].y] === false ){
-				newArr.push( cell.moves[k] );
+				if( cell.rep == "p" ){		
+				    if( cell.pos.x == cell.moves[k].x ){
+					newArr.push( cell.moves[k] );
+				    }
+				} else {
+				    newArr.push( cell.moves[k] );
+				}
 			    } else {
 				//remove blocked moves
 				if ( bd[cell.moves[k].x][cell.moves[k].y].player != this.turn ){
-				    newArr.push( cell.moves[k] );
+				    if( cell.rep == "p" ){
+					if( cell.pos.x != cell.moves[k].x ){
+					    newArr.push( cell.moves[k] );
+					}
+				    } else {
+					newArr.push( cell.moves[k] );
+				    }
 				}
 				if( !! cell.dependentMoves ){
 				    arr = cell.dependentMoves( cell.moves[k] );
@@ -99,6 +111,7 @@ function Board( board, player, level ){
 
     this.permuteBoards = function(){
 	//TODO remove captured pieces
+	var turn;
 	for( var i = 0; i < this.moves.length; i ++ ){
 	    for( var m = 0; m < this.moves[i].moves.length; m ++ ){
 		//console.log( this.moves[i].moves );
@@ -117,10 +130,12 @@ function Board( board, player, level ){
 			}
 		    }
 		}
-		var turn = WHITE;
 		if( this.turn == WHITE ){
 		    turn = BLACK;
+		} else if( this.turn == BLACK ){
+		    turn = WHITE;
 		}
+		//console.log( this.turn + " " + turn );
 		var obj = new Board( newBoard, turn, this.level + 1 );
 		this.children.push( obj );
 	    }
@@ -130,71 +145,89 @@ function Board( board, player, level ){
     this.score = function(){
 	//TODO score center control
 	//TODO figure in mate and checkmate
-	var score0 = 0
-	var score7 = 0;
+	var white = 0
+	var black = 0;
 	for( var i = 0; i < this.board.length; i ++ ){
 	    for( var j = 0; j < this.board[i].length; j ++ ){
 		if( board[i][j] !== false ){
 		    if( board[i][j].player == WHITE ){
-			score0 += pieceScores[board[i][j].rep];
+			white += pieceScores[board[i][j].rep];
+			if( board[i][j].pos.center() ){
+			    white += 1;
+			}
 		    } else if( board[i][j].player == BLACK ){
-			score7 += pieceScores[board[i][j].rep];
+			black += pieceScores[board[i][j].rep];
+			if( board[i][j].pos.center() ){
+			    black += 1;
+			}
 		    }
 		}
 	    }
 	}
 	
-	return { "BLACK" : score7, "WHITE" : score0, "total" : (score0 - score7) };
+	return { "BLACK" : black, "WHITE" : white, "total" : (white - black), "board" : this };
     }
 
-    this.scoreBoards = function(){
-	var highest = null;
-	var board;
-	var score;
-	for( var i = 0; i < this.children.length; i ++ ){
-	    score = this.children[i].score();
-	    if( this.turn == WHITE ){
-		if( highest === null || score.total > highest ){
-		    highest = score.total;
-		    board = this.children[i];
-		}
-	    } else if( this.turn == BLACK ){
-		if( highest === null || score.total < highest ){
-		    highest = score.total;
-		    board = this.children[i];
-		}
-	    }
-	}
-	return [board, score];
-    }	
-
     this.init = function( ){
+	this.children = [];
 	this.getValidMoves();
 	this.permuteBoards();
 	var best = null;
 	var tmp;
-	if( this.level >= levels ){
-	    return this.scoreBoards();
+	if( this.level > levels ){
+	    //return this.scoreBoards();
+	    return this.score();
 	} else {
 	    //figure out scoring.  High means 0, low means 7
 	    for( var i = 0; i < this.children.length; i ++ ){
 		tmp = this.children[i].init();
-		if( !! tmp ){
-		    if( this.turn == WHITE ){
-			if( best === null || tmp[1].total < best ){
+		if( this.turn == WHITE ){
+		    if( best === null || tmp.total > best.total ){
+			best = tmp;
+		    } else if( tmp.total == best.total ){
+			if( Math.round( Math.random() ) == 0 ){
 			    best = tmp;
 			}
-		    } else if( this.turn == BLACK ){
-			if( best === null || tmp[1].total > best ){
+		    } else {
+			this.children[i] == null;
+		    }
+		} else if( this.turn == BLACK ){
+		    if( best === null || tmp.total < best.total ){
+			best = tmp;
+		    } else if( tmp.total == best.total ){
+			if( Math.round( Math.random() ) == 0 ){
 			    best = tmp;
 			}
+		    } else {
+			this.children[i] == null;
 		    }
 		}
 	    }
+	    if( this.level > 1 ){
+		this.children = [];
+	    } 
 	    if( this.level > 0 ){
-		return [this, best[1]];
-	    } else {
-		return best;
+		best.board = this;
+	    }
+	    return best;
+	}
+    }
+
+    this.print = function(){
+	for( var i = 0; i < this.board.length; i ++ ){
+	    for( var j = 0; j < this.board[i].length; j ++ ){
+		if( this.board[i][j] === false ){
+		    $("#row_" + i + " .col_" + j).html( "&nbsp;" );
+		} else {
+		    $("#row_" + i + " .col_" + j).text( this.board[i][j].rep );
+		}
+		if( this.board[i][j] === false ){
+		    $("#row_" + i + " .col_" + j).css( "background", "#AAA" );
+		} else if( this.board[i][j].player == WHITE ){
+		    $("#row_" + i + " .col_" + j).css( "background", "#DDD" );
+		} else if( this.board[i][j].player == BLACK ){
+		    $("#row_" + i + " .col_" + j).css( "background", "#555" );
+		}
 	    }
 	}
     }
@@ -455,11 +488,15 @@ function Pawn( pos, player ){
 		moves.push( new Position( pos.x, pos.y + 2 ) );
 	    }
 	    moves.push( new Position( pos.x, pos.y + 1 ) );
+	    moves.push( new Position( pos.x - 1, pos.y + 1 ) );
+	    moves.push( new Position( pos.x + 1, pos.y + 1 ) );
 	} else if( this.player == BLACK ){
 	    if( pos.y == 6 ){
 		moves.push( new Position( pos.x, pos.y - 2 ) );
 	    }
 	    moves.push( new Position( pos.x, pos.y - 1 ) );
+	    moves.push( new Position( pos.x - 1, pos.y -1 ) );
+	    moves.push( new Position( pos.x + 1, pos.y -1 ) );
 	}
 	for( var i = 0; i < moves.length; i++ ){
 	    x = moves[i].x;
@@ -520,4 +557,7 @@ function Knight( pos, player ){
 function Position( x, y ){
     this.x = x;
     this.y = y;
+    this.center = function(){
+	return (this.x >=3 && this.x <= 4 && this.y >= 3 && this.y <= 4);
+    }
 }
