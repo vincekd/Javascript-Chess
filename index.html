@@ -3,13 +3,27 @@
   <head>
     <link type="text/stylesheet" rel="stylesheet" href="chess.css">
     <script type="text/javascript" src="/js/jquery.js"></script>
+    <script type="text/javascript" src="chess.js"></script>
+    <script type="text/javascript" src="play.js"></script>
   </head>
   <body>
     <div id="wrapper">
       <div id="board">
 	<table>
-	  <tbody>
+	  <tbody>	   
+	    <tr id="rows">
+	      <td class=""></td>
+	      <td class="">0</td>
+	      <td class="">1</td>
+	      <td class="">2</td>
+	      <td class="">3</td>
+	      <td class="">4</td>
+	      <td class="">5</td>
+	      <td class="">6</td>
+	      <td class="">7</td>
+	    </tr>
 	    <tr id="row_0">
+	      <td class="">0</td>
 	      <td class="col_0"></td>
 	      <td class="col_1"></td>
 	      <td class="col_2"></td>
@@ -20,6 +34,7 @@
 	      <td class="col_7"></td>
 	    </tr>
 	    <tr id="row_1">
+	      <td class="">1</td>
 	      <td class="col_0"></td>
 	      <td class="col_1"></td>
 	      <td class="col_2"></td>
@@ -30,6 +45,7 @@
 	      <td class="col_7"></td>
 	    </tr>
 	    <tr id="row_2">
+	      <td class="">2</td>
 	      <td class="col_0"></td>
 	      <td class="col_1"></td>
 	      <td class="col_2"></td>
@@ -40,6 +56,7 @@
 	      <td class="col_7"></td>
 	    </tr>
 	    <tr id="row_3">
+	      <td class="">3</td>
 	      <td class="col_0"></td>
 	      <td class="col_1"></td>
 	      <td class="col_2"></td>
@@ -50,6 +67,7 @@
 	      <td class="col_7"></td>
 	    </tr>
 	    <tr id="row_4">
+	      <td class="">4</td>
 	      <td class="col_0"></td>
 	      <td class="col_1"></td>
 	      <td class="col_2"></td>
@@ -60,6 +78,7 @@
 	      <td class="col_7"></td>
 	    </tr>
 	    <tr id="row_5">
+	      <td class="">5</td>
 	      <td class="col_0"></td>
 	      <td class="col_1"></td>
 	      <td class="col_2"></td>
@@ -70,6 +89,7 @@
 	      <td class="col_7"></td>
 	    </tr>
 	    <tr id="row_6">
+	      <td class="">6</td>
 	      <td class="col_0"></td>
 	      <td class="col_1"></td>
 	      <td class="col_2"></td>
@@ -80,6 +100,7 @@
 	      <td class="col_7"></td>
 	    </tr>
 	    <tr id="row_7">
+	      <td class="">7</td>
 	      <td class="col_0"></td>
 	      <td class="col_1"></td>
 	      <td class="col_2"></td>
@@ -93,9 +114,7 @@
 	</table>
       </div>
     </div>
-    <a id="run">Run</a>
+    <a id="run" href="javascript:;" onclick="runGame(1);">Run</a>
   </body>
-  <script type="text/javascript" src="chess.js"></script>
-  <script type="text/javascript" src="play.js"></script>
 </html>
 

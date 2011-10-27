@@ -112,6 +112,11 @@ function Board( board, player, level ){
     this.permuteBoards = function(){
 	//TODO remove captured pieces
 	var turn;
+	if( this.turn == WHITE ){
+	    turn = BLACK;
+	} else if( this.turn == BLACK ){
+	    turn = WHITE;
+	}
 	for( var i = 0; i < this.moves.length; i ++ ){
 	    for( var m = 0; m < this.moves[i].moves.length; m ++ ){
 		//console.log( this.moves[i].moves );
@@ -126,14 +131,13 @@ function Board( board, player, level ){
 			} else if( this.moves[i].moves[m].x == k && this.moves[i].moves[m].y == j ){
 			    //already filled, or should be soon
 			} else {
-			    newBoard[k][j] = this.board[k][j];
+			    if( this.board[k][j] === false ){
+				newBoard[k][j] = false;
+			    } else {
+				newBoard[k][j] = deepCopy( this.board[k][j], this.board[k][j].pos );
+			    }
 			}
 		    }
-		}
-		if( this.turn == WHITE ){
-		    turn = BLACK;
-		} else if( this.turn == BLACK ){
-		    turn = WHITE;
 		}
 		//console.log( this.turn + " " + turn );
 		var obj = new Board( newBoard, turn, this.level + 1 );
