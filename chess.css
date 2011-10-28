@@ -3,3 +3,7 @@ tr td {
     height:50px;
     border:1px solid black;
 }
+
+.num, .rows {
+    background: #AAA;
+}
